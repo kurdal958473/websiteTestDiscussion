@@ -1,0 +1,16 @@
+
+{
+  "name": "house-display-website",
+  "version": "1.0.0",
+  "description": "房屋展示網站與 CSV 後台管理",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0"
+  }
+}

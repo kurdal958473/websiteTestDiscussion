@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>跟毓萱一起出來玩</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f0f0f0;
+      }
+
+      header {
+        position: fixed; /* 讓 header 固定在上方 */
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 4000; /* 確保在最上層 */
+        background-color: #2894ff;
+        color: white;
+        padding: 0.4rem 1rem; /* 調整上下寬度（變窄） */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 增加陰影效果 */
+      }
+
+      .login-btn {
+        cursor: pointer;
+        background: white;
+        color: #2894ff;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        border: none;
+        font-weight: bold;
+        margin-left: auto; /* ✅ 推到右邊 */
+        margin-right: 1rem; /* 往左一點點 */
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 300px;
+        text-align: center;
+      }
+
+      .option-btn {
+        margin: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #4caf50;
+        border-radius: 5px;
+        background: white;
+        cursor: pointer;
+      }
+
+      .option-btn.selected {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      .confirm-btn {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        background-color: #2894ff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>幫毓萱按讚</h1>
+      <div
+        id="click-container"
+        style="display: flex; align-items: center; margin-left: 1rem"
+      >
+        <img
+          id="clickable-img"
+          src="/image/joey/Joey<3.jpg"
+          style="width: 50px; cursor: pointer; margin-right: 1rem"
+        />
+        <span id="click-count">載入中...</span>
+      </div>
+      <button id="loginToggle" class="login-btn">點擊以登入</button>
+    </header>
+    <script type="module" src="js/click.js"></script>
+
+    <main style="padding: 2rem">
+      <p>我也不知道我到底都幹了些什麼，然後這段會被遮住唷。</p>
+      <!--
+      <h2>留言板</h2>
+      <div id="comment-board" style="margin-bottom: 1rem;"></div>
+
+      <input id="comment-input" type="text" placeholder="輸入留言內容..." style="width: 60%;" />
+      <button onclick="submitComment()">送出留言</button>
+      -->
+      <button onclick="toggleCommentBoard()">收縮留言板</button>
+
+      <div id="comment-container" style="margin-top: 10px">
+        <div id="comment-board">載入中...</div>
+        <textarea id="comment-input" placeholder="寫點什麼吧..."></textarea>
+        <button onclick="submitComment()">送出留言</button>
+      </div>
+    </main>
+
+    <!-- Modal 登入選單 -->
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <h2>選擇登入身份</h2>
+        <div>
+          <button class="option-btn">蝌蚪</button>
+          <button class="option-btn">小升</button>
+          <button class="option-btn">阿吉</button>
+          <button class="option-btn">意婷</button>
+          <button class="option-btn">珍華</button>
+          <button class="option-btn">湘婷</button>
+          <button class="option-btn">蔡總</button>
+          <button class="option-btn">秋蓁</button>
+          <button class="option-btn">家禾</button>
+          <button class="option-btn">陳博</button>
+          <button class="option-btn">Zion</button>
+          <button class="option-btn">小王子</button>
+          <button class="option-btn">神秘人</button>
+        </div>
+        <button id="confirmBtn" class="confirm-btn">確定</button>
+      </div>
+    </div>
+
+    <script>
+      const loginBtn = document.getElementById("loginToggle");
+      const modal = document.getElementById("loginModal");
+      const optionBtns = document.querySelectorAll(".option-btn");
+      const confirmBtn = document.getElementById("confirmBtn");
+      let selectedOption = "";
+      let currentUsername = "匿名使用者"; // 全域變數，初始為匿名使用者
+
+      loginBtn.addEventListener("click", () => {
+        modal.style.display = "flex";
+      });
+
+      optionBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          optionBtns.forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          selectedOption = btn.textContent;
+        });
+      });
+
+      confirmBtn.addEventListener("click", () => {
+        if (selectedOption) {
+          currentUsername = selectedOption; // 更新登入使用者
+          loginBtn.textContent = selectedOption;
+        }
+        modal.style.display = "none";
+      });
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+
+      // 提交後台敘述
+      async function submitDesc(button) {
+        const cell = button.parentElement;
+        const row = cell.closest("tr");
+        const descDiv = cell.querySelector(".backend-desc");
+        const textarea = cell.querySelector("textarea");
+        const newText = textarea.value.trim();
+
+        if (!newText) return;
+
+        const houseName = row.dataset.house;
+        const city = row.dataset.city;
+        const originalDesc = row.cells[2].textContent.trim();
+
+        try {
+          button.disabled = true;
+          button.textContent = "送出中...";
+
+          const response = await fetch("/api/update-note", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              houseName,
+              city,
+              originalDesc,
+              newNote: newText,
+              username: currentUsername, // 使用全域變數作為使用者名稱
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            descDiv.textContent = `${currentUsername}: ${result.updatedDesc}`;
+            textarea.value = "";
+            alert("備註已成功更新到 CSV 檔案！");
+          } else {
+            alert("更新失敗：" + result.error);
+          }
+        } catch (error) {
+          console.error("更新備註失敗:", error);
+          alert("更新失敗，請稍後再試");
+        } finally {
+          button.disabled = false;
+          button.textContent = "送出";
+        }
+      }
+
+      // 頁面載入初始化
+      document.addEventListener("DOMContentLoaded", function () {
+        loadBackendNotes();
+      });
+
+      //  留言板功能
+      async function submitComment() {
+        const input = document.getElementById("comment-input");
+        const comment = input.value.trim();
+        const username = currentUsername || "匿名使用者";
+
+        if (!comment) return;
+
+        const res = await fetch("/api/add-comment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username,
+            comment,
+            datetime: new Date().toISOString(),
+          }),
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          input.value = "";
+          loadComments(); // 刷新留言
+        } else {
+          alert("留言失敗：" + result.error);
+        }
+      }
+
+      async function loadComments() {
+        const res = await fetch("/api/comments");
+        const data = await res.json();
+        const board = document.getElementById("comment-board");
+        board.innerHTML = "";
+
+        if (!data || data.length === 0) {
+          board.textContent = "目前尚無留言。";
+          return;
+        }
+        
+        data.forEach((entry) => {
+          const container = document.createElement("div"); // 或 span，看你排版
+          container.style.marginRight = "2rem"; // 類似 tab 的效果
+
+          const usernameEl = document.createElement("strong"); // 粗體元素
+
+          usernameEl.textContent = entry.username + ": ";
+
+          const commentEl = document.createElement("span"); // 普通字體
+          commentEl.textContent = entry.comment;
+
+          container.appendChild(usernameEl);
+          container.appendChild(commentEl);
+          board.appendChild(container);
+        });
+        //board.appendChild(container);
+      }
+
+      window.onload = loadComments;
+      // 留言板功能 end
+
+      // 留言板摺疊
+      function toggleCommentBoard() {
+        const container = document.getElementById("comment-container");
+        const isHidden = container.style.display === "none";
+
+        container.style.display = isHidden ? "block" : "none";
+
+        // 每次打開時載入留言
+        if (isHidden) {
+          loadComments();
+        }
+      }
+      // 留言板折疊 end
+    </script>
+  </body>
+
+  <head>
+    <meta charset="UTF-8" />
+    <title>民宿列表整理</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        padding: 1rem;
+      }
+      h2 {
+        margin-top: 2rem;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        background: white;
+        margin-bottom: 2rem;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      .toggle-img {
+        cursor: pointer;
+        color: white;
+        background: #4caf50;
+        padding: 0.3rem 1rem;
+        border: none;
+        border-radius: 5px;
+      }
+      .house-img {
+        width: 150px;
+        cursor: pointer;
+      }
+      textarea {
+        width: 100%;
+        height: 60px;
+        margin-top: 0.5rem;
+      }
+      .submit-btn {
+        margin-top: 0.5rem;
+        padding: 0.3rem 1rem;
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>民宿列表整理</h1>
+    <!----------------------------改這裡唷 ---------------------------------改這裡唷 -------------------------> 
+    <!-- 範例 -->
+    <!-- 城市：台北 -->
+    <h2>台北市</h2>
+    <table>
+      <tr>
+        <th>房屋名稱</th>
+        <th>圖片切換</th>
+        <th>敘述</th>
+        <th>後台敘述（可更新）</th>
+      </tr>
+      <tr data-house="信義大樓" data-city="台北市">
+        <td>
+          <a href="https://example.com/house1" target="_blank">信義大樓</a>
+        </td>
+        <td>
+          <!--
+          <button class="toggle-img" onclick="toggleImage(this, 'img1')">
+            點擊開圖
+          </button>
+          <img
+            id="img1"
+            class="house-img"
+            src="https://pgw.udn.com.tw/gw/photo.php?u=https://uc.udn.com.tw/photo/2025/02/24/realtime/31550800.jpg&x=0&y=0&sw=0&sh=0&exp=3600"
+            style="display: none"
+            onclick="toggleImage(this, 'img1', true)"
+          />
+          -->
+          <img
+            id="img1"
+            class="house-img"
+            src="https://pgw.udn.com.tw/gw/photo.php?u=https://uc.udn.com.tw/photo/2025/02/24/realtime/31550800.jpg&x=0&y=0&sw=0&sh=0&exp=3600"
+            style="display: true"
+          />
+        </td>
+        <td>精華地段，全新裝潢。</td>
+        <td>
+          <div class="backend-desc" id="taipei-desc">載入中...</div>
+          <textarea placeholder="輸入備註..."></textarea>
+          <button class="submit-btn" onclick="submitDesc(this)">送出</button>
+        </td>
+      </tr>
+    </table>
+    <!-- 範例End -->
+    <!-- 城市：台中 -->
+    <h2>台中市</h2>
+    <table>
+      <tr>
+        <th>房屋名稱</th>
+        <th>圖片切換</th>
+        <th>敘述</th>
+        <th>後台敘述（可更新）</th>
+      </tr>
+      <tr data-house="逢甲公寓" data-city="台中市">
+        <td>
+          <a href="https://example.com/house2" target="_blank">逢甲公寓</a>
+        </td>
+        <td>
+          <button class="toggle-img" onclick="toggleImage(this, 'img2')">
+            點擊開圖
+          </button>
+          <img
+            id="img2"
+            class="house-img"
+            src="https://via.placeholder.com/150/FFB6C1"
+            style="display: none"
+            onclick="toggleImage(this, 'img2', true)"
+          />
+        </td>
+        <td>靠近夜市，生活機能佳。</td>
+        <td>
+          <div class="backend-desc" id="taichung-desc">載入中...</div>
+          <textarea placeholder="輸入備註..."></textarea>
+          <button class="submit-btn" onclick="submitDesc(this)">送出</button>
+        </td>
+      </tr>
+    </table>
+
+    <!-- 城市：高雄 -->
+    <h2>高雄市</h2>
+    <table>
+      <tr>
+        <th>房屋名稱</th>
+        <th>圖片切換</th>
+        <th>敘述</th>
+        <th>後台敘述（可更新）</th>
+      </tr>
+      <tr data-house="巨蛋華廈" data-city="高雄市">
+        <td>
+          <a href="https://example.com/house3" target="_blank">巨蛋華廈</a>
+        </td>
+        <td>
+          <button class="toggle-img" onclick="toggleImage(this, 'img3')">
+            點擊開圖
+          </button>
+          <img
+            id="img3"
+            class="house-img"
+            src="https://via.placeholder.com/150/87CEFA"
+            style="display: none"
+            onclick="toggleImage(this, 'img3', true)"
+          />
+        </td>
+        <td>近捷運、採光良好。</td>
+        <td>
+          <div class="backend-desc" id="kaohsiung-desc">載入中...</div>
+          <textarea placeholder="輸入備註..."></textarea>
+          <button class="submit-btn" onclick="submitDesc(this)">送出</button>
+        </td>
+      </tr>
+
+      <tr data-house="test" data-city="高雄市">
+        <td>
+          <a href="https://example.com/house3" target="_blank">test</a>
+        </td>
+        <td>
+          <button class="toggle-img" onclick="toggleImage(this, 'img3')">
+            點擊開圖
+          </button>
+          <img
+            id="img3"
+            class="house-img"
+            src="https://via.placeholder.com/150/87CEFA"
+            style="display: none"
+            onclick="toggleImage(this, 'img3', true)"
+          />
+        </td>
+        <td>近捷運、採光良好。</td>
+        <td>
+          <div class="backend-desc" id="kaohsiung-desc">載入中...</div>
+          <textarea placeholder="輸入備註..."></textarea>
+          <button class="submit-btn" onclick="submitDesc(this)">送出</button>
+        </td>
+      </tr>
+    </table>
+
+    <!----------------------------改這裡唷 ---------------------------------改這裡唷 -------------------------> 
+    
+    <script>
+      // 頁面載入時從 CSV 讀取資料
+      document.addEventListener("DOMContentLoaded", function () {
+        loadBackendNotes();
+      });
+
+      // 從後端 API 載入後台備註
+      async function loadBackendNotes() {
+        try {
+          const response = await fetch("/api/backend-notes");
+
+          if (!response.ok) {
+            throw new Error("網路響應不正常：" + response.status);
+          }
+
+          const notes = await response.json();
+
+          // 按房屋分組筆記
+          const groupedNotes = {};
+          notes.forEach((note) => {
+            const key = note.houseName + "-" + note.city;
+            if (!groupedNotes[key]) {
+              groupedNotes[key] = [];
+            }
+            groupedNotes[key].push(note);
+          });
+
+          // 顯示每個房屋的所有留言
+          Object.keys(groupedNotes).forEach((key) => {
+            const parts = key.split("-");
+            const houseName = parts[0];
+            const city = parts[1];
+            const row = document.querySelector(
+              "tr[data-house='" + houseName + "'][data-city='" + city + "']",
+            );
+            if (row) {
+              const descDiv = row.querySelector(".backend-desc");
+              const houseNotes = groupedNotes[key];
+
+              // 將所有留言格式化顯示
+              const formattedNotes = houseNotes
+                .map(function (note) {
+                  return note.username + ": " + note.backendDesc;
+                })
+                .join("\n\n");
+
+              descDiv.style.whiteSpace = "pre-line"; // 支援換行顯示
+              descDiv.textContent = formattedNotes;
+            }
+          });
+
+          // 如果沒有筆記，顯示預設訊息
+          const allRows = document.querySelectorAll("tr[data-house]");
+          allRows.forEach(function (row) {
+            const descDiv = row.querySelector(".backend-desc");
+            const houseName = row.dataset.house;
+            const city = row.dataset.city;
+            const key = houseName + "-" + city;
+
+            if (!groupedNotes[key] || groupedNotes[key].length === 0) {
+              descDiv.textContent = "尚無備註";
+            }
+          });
+        } catch (error) {
+          console.error("載入後台備註失敗:", error);
+          const allDescDivs = document.querySelectorAll(".backend-desc");
+          allDescDivs.forEach((div) => {
+            div.textContent = "後台備註載入失敗";
+          });
+        }
+      }
+
+      // 切換圖 / 按鈕
+      function toggleImage(el, imgId, fromImg = false) {
+        const img = document.getElementById(imgId);
+        if (!fromImg) {
+          el.style.display = "none";
+          img.style.display = "block";
+        } else {
+          el.style.display = "none";
+          const btn = el.previousElementSibling;
+          btn.style.display = "inline-block";
+        }
+      }
+
+      // 提交後台敘述
+      async function submitDesc(button) {
+        const cell = button.parentElement;
+        const row = cell.closest("tr");
+        const descDiv = cell.querySelector(".backend-desc");
+        const textarea = cell.querySelector("textarea");
+        const newText = textarea.value.trim();
+
+        if (!newText) return;
+
+        const houseName = row.dataset.house;
+        const city = row.dataset.city;
+        const originalDesc = row.cells[2].textContent.trim();
+
+        try {
+          button.disabled = true;
+          button.textContent = "送出中...";
+
+          const response = await fetch("/api/update-note", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              houseName,
+              city,
+              originalDesc,
+              newNote: newText,
+              username: currentUsername, // 使用全域變數作為使用者名稱
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            // 重新載入後台備註以顯示最新內容
+            loadBackendNotes();
+            textarea.value = "";
+          } else {
+            alert("更新失敗：" + result.error);
+          }
+        } catch (error) {
+          console.error("更新備註失敗:", error);
+          alert("更新失敗，請稍後再試");
+        } finally {
+          button.disabled = false;
+          button.textContent = "送出";
+        }
+      }
+    </script>
+  </body>
+</html>
