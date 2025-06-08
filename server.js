@@ -5,7 +5,7 @@ const csv = require("csv-parser");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 3000;  // 這樣才會兼容 Railway
 
 app.use(express.json());
 app.use(express.static("."));
@@ -174,8 +174,8 @@ app.post("/api/add-comment", (req, res) => {
 // 聊天區end
 
 // 啟動伺服器
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`伺服器運行在 http://0.0.0.0:${PORT}`);
+app.listen(PORT,  () => {
+  console.log(`Server running on port ${PORT}`);
   initializeCSV();
 });
 
